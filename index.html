@@ -9,12 +9,17 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
+<meta name="theme-color" content="#1c1c1e">
 </head>
 <body>
 
-<header class="site-header">
+<div class="parallax-bg" id="parallaxBg" style="background-image:url('assets/hero-bg.jpg')"></div>
+
+<header class="site-header" id="siteHeader">
   <div class="container header-inner">
-    <a href="#inicio" class="logo">ADEMICON <span>Consórcios</span></a>
+    <a href="#inicio" class="logo">
+      <img src="assets/logo-ademicon.png" alt="ADEMICON Consórcios e Investimentos" class="logo-img">
+    </a>
     <nav class="main-nav">
       <a href="#inicio">Início</a>
       <a href="#solucoes">Soluções</a>
@@ -40,6 +45,7 @@
         <img src="assets/consultor-agro.jpg" alt="Carlos Eduardo, Consultor de Consórcios e Investimentos, especialista em agronegócio">
       </div>
     </div>
+    <div class="hero-scroll-cue"><span></span></div>
   </section>
 
   <section class="segmentos" id="solucoes">

@@ -222,3 +222,49 @@ function preSelectFromHash() {
 }
 
 preSelectFromHash();
+
+(function () {
+  const header = document.getElementById("siteHeader");
+  if (!header) return;
+  let lastY = window.scrollY;
+  let ticking = false;
+
+  function onScroll() {
+    const y = window.scrollY;
+    if (y > lastY && y > 120) {
+      header.classList.add("hide");
+    } else {
+      header.classList.remove("hide");
+    }
+    lastY = y;
+    ticking = false;
+  }
+
+  window.addEventListener(
+    "scroll",
+    () => {
+      if (!ticking) {
+        requestAnimationFrame(onScroll);
+        ticking = true;
+      }
+    },
+    { passive: true }
+  );
+})();
+
+(function () {
+  const bg = document.getElementById("parallaxBg");
+  const hero = document.querySelector(".hero");
+  if (!bg || !hero) return;
+
+  function update() {
+    const heroHeight = hero.offsetHeight || 1;
+    const progress = Math.min(window.scrollY / heroHeight, 1);
+    bg.style.filter = `blur(${progress * 12}px)`;
+    bg.style.transform = `scale(1.15) translateY(${progress * 24}px)`;
+  }
+
+  window.addEventListener("scroll", update, { passive: true });
+  window.addEventListener("resize", update);
+  update();
+})();
