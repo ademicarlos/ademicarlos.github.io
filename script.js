@@ -16,6 +16,14 @@ const SEGMENTO_LABEL = {
   outros: "Outros",
 };
 
+const CREDITO_PREDEFINIDOS = [
+  "Até R$ 50 mil",
+  "R$ 50 mil – R$ 100 mil",
+  "R$ 100 mil – R$ 300 mil",
+  "R$ 300 mil – R$ 500 mil",
+  "Acima de R$ 500 mil",
+];
+
 const state = {
   segmento: null,
   credito: null,
@@ -29,11 +37,45 @@ const state = {
   estado: "",
 };
 
+const TOTAL_STEPS = 5;
 let currentStep = 1;
 
 const form = document.getElementById("simForm");
 const steps = document.querySelectorAll(".form-step");
 const progressSteps = document.querySelectorAll(".progress-step");
+const progressLabel = document.getElementById("progressLabel");
+
+/* ---------- helpers ---------- */
+
+function parseValorBR(raw) {
+  if (!raw) return null;
+  let s = String(raw).trim().replace(/^R\$\s*/i, "").replace(/\s/g, "");
+  if (!s) return null;
+  if (s.includes(",")) {
+    s = s.replace(/\./g, "").replace(",", ".");
+  } else {
+    s = s.replace(/\./g, "");
+  }
+  const num = parseFloat(s);
+  if (isNaN(num) || num <= 0) return null;
+  return num;
+}
+
+function formatBRL(num) {
+  return num.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
+}
+
+function setFieldError(fieldId, show) {
+  const el = document.getElementById(fieldId);
+  if (el) el.hidden = !show;
+}
+
+/* ---------- step navigation ---------- */
+
+function focusStepHeading(step) {
+  const el = document.querySelector(`.form-step[data-step="${step}"] h3`);
+  if (el) el.focus({ preventScroll: true });
+}
 
 function goToStep(step) {
   currentStep = step;
@@ -43,49 +85,174 @@ function goToStep(step) {
     el.classList.toggle("active", n === step);
     el.classList.toggle("done", n < step);
   });
+  if (progressLabel && typeof step === "number") {
+    progressLabel.textContent = `Etapa ${step} de ${TOTAL_STEPS}`;
+  }
+  syncStepUI(step);
   document.querySelector(".form-card").scrollIntoView({ behavior: "smooth", block: "start" });
+  focusStepHeading(step);
 }
 
-function selectOption(group, button) {
-  group.querySelectorAll(".option-btn").forEach((b) => b.classList.remove("selected"));
-  button.classList.add("selected");
+function selectOption(group, button, { silent } = {}) {
+  group.querySelectorAll(".option-btn").forEach((b) => {
+    b.classList.remove("selected");
+    b.setAttribute("aria-pressed", "false");
+  });
+  if (button) {
+    button.classList.add("selected");
+    button.setAttribute("aria-pressed", "true");
+  }
 }
+
+function setContinueEnabled(step, enabled) {
+  const btn = document.querySelector(`[data-action="continue"][data-step="${step}"]`);
+  if (btn) btn.disabled = !enabled;
+}
+
+/* Restores visual selection state for a step based on the current `state`,
+   so navigating back and forward never loses a previous answer. */
+function syncStepUI(step) {
+  if (step === 1) {
+    const group = document.getElementById("step1-options");
+    const btn = state.segmento ? group.querySelector(`.option-btn[data-value="${state.segmento}"]`) : null;
+    selectOption(group, btn);
+    setContinueEnabled(1, !!state.segmento);
+  }
+
+  if (step === 2) {
+    const group = document.getElementById("step2-options");
+    const outroCampo = document.getElementById("campo-outro-credito");
+    const outroInput = document.getElementById("outroCredito");
+    const continueBtn = document.querySelector('[data-action="continue"][data-step="2"]');
+
+    if (state.credito && CREDITO_PREDEFINIDOS.includes(state.credito)) {
+      selectOption(group, group.querySelector(`.option-btn[data-value="${state.credito}"]`));
+      outroCampo.hidden = true;
+      continueBtn.hidden = false;
+      setContinueEnabled(2, true);
+    } else if (state.credito) {
+      selectOption(group, group.querySelector('.option-btn[data-value="outro"]'));
+      outroCampo.hidden = false;
+      continueBtn.hidden = true;
+      outroInput.value = state.credito.replace(/^R\$\s*/i, "");
+      validarOutroCredito();
+    } else {
+      selectOption(group, null);
+      outroCampo.hidden = true;
+      continueBtn.hidden = false;
+      setContinueEnabled(2, false);
+    }
+  }
+
+  if (step === 3) {
+    const group = document.getElementById("step3-options");
+    const btn = state.objetivo ? group.querySelector(`.option-btn[data-value="${state.objetivo}"]`) : null;
+    selectOption(group, btn);
+    setContinueEnabled(3, !!state.objetivo);
+  }
+
+  if (step === 4) {
+    const prazoGroup = document.getElementById("prazo-options");
+    const lanceGroup = document.getElementById("lance-options");
+    const campoLance = document.getElementById("campo-valor-lance");
+    const lanceInput = document.getElementById("valorLance");
+
+    selectOption(prazoGroup, state.prazo ? prazoGroup.querySelector(`.option-btn[data-value="${state.prazo}"]`) : null);
+    selectOption(lanceGroup, state.possuiLance ? lanceGroup.querySelector(`.option-btn[data-value="${state.possuiLance}"]`) : null);
+
+    if (state.possuiLance === "Sim") {
+      campoLance.hidden = false;
+      if (state.valorLance) lanceInput.value = state.valorLance;
+    } else {
+      campoLance.hidden = true;
+    }
+    setFieldError("prazoError", false);
+    setFieldError("valorLanceError", false);
+  }
+}
+
+/* ---------- step 1: segmento ---------- */
 
 document.getElementById("step1-options").addEventListener("click", (e) => {
   const btn = e.target.closest(".option-btn");
   if (!btn) return;
   state.segmento = btn.dataset.value;
   selectOption(e.currentTarget, btn);
+  setContinueEnabled(1, true);
   buildStep3Options();
-  setTimeout(() => goToStep(2), 200);
 });
 
-document.getElementById("step2-options").addEventListener("click", (e) => {
+document.querySelector('[data-action="continue"][data-step="1"]').addEventListener("click", () => {
+  if (!state.segmento) return;
+  goToStep(2);
+});
+
+/* ---------- step 2: crédito ---------- */
+
+const step2Group = document.getElementById("step2-options");
+const outroCampo = document.getElementById("campo-outro-credito");
+const outroInput = document.getElementById("outroCredito");
+const confirmarCreditoBtn = document.getElementById("confirmarCredito");
+const step2ContinueBtn = document.querySelector('[data-action="continue"][data-step="2"]');
+
+step2Group.addEventListener("click", (e) => {
   const btn = e.target.closest(".option-btn");
   if (!btn) return;
-  selectOption(e.currentTarget, btn);
-  const outroCampo = document.getElementById("campo-outro-credito");
+  selectOption(step2Group, btn);
+
   if (btn.dataset.value === "outro") {
-    outroCampo.hidden = false;
     state.credito = null;
-    document.getElementById("outroCredito").focus();
+    outroCampo.hidden = false;
+    step2ContinueBtn.hidden = true;
+    setFieldError("outroCreditoError", false);
+    outroInput.value = "";
+    validarOutroCredito();
+    outroInput.focus();
   } else {
     outroCampo.hidden = true;
+    step2ContinueBtn.hidden = false;
     state.credito = btn.dataset.value;
-    setTimeout(() => goToStep(3), 200);
+    setContinueEnabled(2, true);
   }
 });
 
-document.getElementById("outroCredito").addEventListener("input", (e) => {
-  state.credito = e.target.value ? `R$ ${e.target.value}` : null;
+function validarOutroCredito() {
+  const num = parseValorBR(outroInput.value);
+  confirmarCreditoBtn.disabled = !num;
+  return num;
+}
+
+outroInput.addEventListener("input", () => {
+  setFieldError("outroCreditoError", false);
+  outroInput.closest(".campo").classList.remove("campo-invalido");
+  validarOutroCredito();
 });
 
-document.getElementById("outroCredito").addEventListener("keydown", (e) => {
-  if (e.key === "Enter" && state.credito) {
+outroInput.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") {
     e.preventDefault();
-    goToStep(3);
+    confirmarCreditoBtn.click();
   }
 });
+
+confirmarCreditoBtn.addEventListener("click", () => {
+  const num = parseValorBR(outroInput.value);
+  if (!num) {
+    setFieldError("outroCreditoError", true);
+    outroInput.closest(".campo").classList.add("campo-invalido");
+    outroInput.focus();
+    return;
+  }
+  state.credito = formatBRL(num);
+  goToStep(3);
+});
+
+step2ContinueBtn.addEventListener("click", () => {
+  if (!state.credito) return;
+  goToStep(3);
+});
+
+/* ---------- step 3: objetivo ---------- */
 
 function buildStep3Options() {
   const container = document.getElementById("step3-options");
@@ -96,6 +263,7 @@ function buildStep3Options() {
     btn.type = "button";
     btn.className = "option-btn";
     btn.dataset.value = item;
+    btn.setAttribute("aria-pressed", "false");
     btn.textContent = item;
     container.appendChild(btn);
   });
@@ -106,66 +274,119 @@ document.getElementById("step3-options").addEventListener("click", (e) => {
   if (!btn) return;
   state.objetivo = btn.dataset.value;
   selectOption(e.currentTarget, btn);
-  setTimeout(() => goToStep(4), 200);
+  setContinueEnabled(3, true);
 });
 
-document.querySelectorAll('[data-step="4"] .option-grid-inline').forEach((group, index) => {
-  group.addEventListener("click", (e) => {
-    const btn = e.target.closest(".option-btn");
-    if (!btn) return;
-    selectOption(group, btn);
-    if (index === 0) {
-      state.prazo = btn.dataset.value;
+document.querySelector('[data-action="continue"][data-step="3"]').addEventListener("click", () => {
+  if (!state.objetivo) return;
+  goToStep(4);
+});
+
+/* ---------- step 4: prazo + lance ---------- */
+
+const prazoGroup = document.getElementById("prazo-options");
+const lanceGroup = document.getElementById("lance-options");
+const campoLance = document.getElementById("campo-valor-lance");
+const lanceInput = document.getElementById("valorLance");
+
+prazoGroup.addEventListener("click", (e) => {
+  const btn = e.target.closest(".option-btn");
+  if (!btn) return;
+  selectOption(prazoGroup, btn);
+  state.prazo = btn.dataset.value;
+  setFieldError("prazoError", false);
+});
+
+lanceGroup.addEventListener("click", (e) => {
+  const btn = e.target.closest(".option-btn");
+  if (!btn) return;
+  selectOption(lanceGroup, btn);
+  state.possuiLance = btn.dataset.value;
+  if (btn.dataset.value === "Sim") {
+    campoLance.hidden = false;
+    setFieldError("valorLanceError", false);
+    lanceInput.focus();
+  } else {
+    campoLance.hidden = true;
+    state.valorLance = "";
+    lanceInput.value = "";
+    setFieldError("valorLanceError", false);
+  }
+});
+
+lanceInput.addEventListener("input", () => {
+  setFieldError("valorLanceError", false);
+  lanceInput.closest(".campo").classList.remove("campo-invalido");
+});
+
+document.querySelector('[data-action="continue"][data-step="4"]').addEventListener("click", () => {
+  let ok = true;
+
+  if (!state.prazo) {
+    setFieldError("prazoError", true);
+    ok = false;
+  }
+
+  if (state.possuiLance === "Sim") {
+    const num = parseValorBR(lanceInput.value);
+    if (!num) {
+      setFieldError("valorLanceError", true);
+      lanceInput.closest(".campo").classList.add("campo-invalido");
+      ok = false;
     } else {
-      state.possuiLance = btn.dataset.value;
-      const campoLance = document.getElementById("campo-valor-lance");
-      if (btn.dataset.value === "Sim") {
-        campoLance.hidden = false;
-        document.getElementById("valorLance").focus();
-      } else {
-        campoLance.hidden = true;
-        state.valorLance = "";
-      }
+      state.valorLance = formatBRL(num);
     }
-  });
+  }
+
+  if (!ok) return;
+  goToStep(5);
 });
 
-document.getElementById("valorLance").addEventListener("input", (e) => {
-  state.valorLance = e.target.value;
-});
+/* ---------- step 5: dados pessoais ---------- */
+
+function validarCampoTexto(inputId, errorId) {
+  const input = document.getElementById(inputId);
+  const valido = input.value.trim().length > 0;
+  setFieldError(errorId, !valido);
+  input.closest(".campo").classList.toggle("campo-invalido", !valido);
+  return valido;
+}
+
+function validarWhatsapp() {
+  const input = document.getElementById("whatsapp");
+  const digits = input.value.replace(/\D/g, "");
+  const valido = digits.length >= 10;
+  setFieldError("whatsappError", !valido);
+  input.closest(".campo").classList.toggle("campo-invalido", !valido);
+  return valido;
+}
+
+/* ---------- back navigation ---------- */
 
 document.querySelectorAll('[data-action="back"]').forEach((btn) => {
   btn.addEventListener("click", () => goToStep(Math.max(1, currentStep - 1)));
 });
 
-document.querySelector('[data-action="next-4"]').addEventListener("click", () => {
-  if (!state.prazo) {
-    alert("Escolha quando você pretende adquirir.");
-    return;
-  }
-  if (state.possuiLance === "Sim" && !state.valorLance) {
-    alert("Informe o valor aproximado disponível para lance.");
-    return;
-  }
-  goToStep(5);
-});
+/* ---------- final submit ---------- */
 
 function buildWhatsappMessage() {
   const linhas = [
-    `Olá, Carlos! Meu nome é ${state.nome}.`,
-    `Vim pelo seu site e gostaria de fazer uma simulação de consórcio.`,
+    `Olá, Carlos! Fiz uma simulação pelo seu site.`,
     ``,
-    `Segmento: ${SEGMENTO_LABEL[state.segmento] || state.segmento}`,
+    `Objetivo: ${SEGMENTO_LABEL[state.segmento] || state.segmento}`,
     `Crédito desejado: ${state.credito}`,
-    `Objetivo: ${state.objetivo}`,
+    `O que pretende adquirir: ${state.objetivo}`,
     `Prazo: ${state.prazo}`,
   ];
   if (state.possuiLance === "Sim" && state.valorLance) {
-    linhas.push(`Valor disponível para lance: R$ ${state.valorLance}`);
+    linhas.push(`Recurso para lance: ${state.valorLance}`);
   } else if (state.possuiLance) {
-    linhas.push(`Valor disponível para lance: ${state.possuiLance}`);
+    linhas.push(`Recurso para lance: ${state.possuiLance}`);
   }
   linhas.push(`Cidade: ${state.cidade}/${state.estado}`);
+  linhas.push(``);
+  linhas.push(`Meu nome é ${state.nome}.`);
+  linhas.push(`Gostaria de receber uma simulação personalizada.`);
   return linhas.join("\n");
 }
 
@@ -178,32 +399,36 @@ form.addEventListener("submit", (e) => {
   state.estado = document.getElementById("estado").value;
   const consentimento = document.getElementById("consentimento").checked;
 
-  if (!state.nome || !state.whatsapp || !state.cidade || !state.estado) {
-    alert("Preencha todos os campos pra continuar.");
-    return;
-  }
-  if (!consentimento) {
-    alert("Confirme a autorização de contato pra continuar.");
+  const nomeOk = validarCampoTexto("nome", "nomeError");
+  const whatsappOk = validarWhatsapp();
+  const cidadeOk = validarCampoTexto("cidade", "cidadeError");
+  const estadoOk = validarCampoTexto("estado", "estadoError");
+  setFieldError("consentimentoError", !consentimento);
+
+  if (!nomeOk || !whatsappOk || !cidadeOk || !estadoOk || !consentimento) {
+    const firstInvalid = form.querySelector(".campo-invalido input, .campo-invalido select, #consentimento:not(:checked)");
+    if (firstInvalid) firstInvalid.focus();
     return;
   }
 
   const mensagem = buildWhatsappMessage();
   const link = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(mensagem)}`;
   document.getElementById("whatsappLink").href = link;
-  document.getElementById("successNome").textContent = `Pronto, ${state.nome}! Recebi seu objetivo.`;
+  document.getElementById("successNome").textContent = `Tudo certo, ${state.nome}!`;
 
   steps.forEach((el) => el.classList.remove("active"));
   document.querySelector('[data-step="success"]').classList.add("active");
   progressSteps.forEach((el) => el.classList.add("done"));
   document.querySelector(".form-card").scrollIntoView({ behavior: "smooth", block: "start" });
+  focusStepHeading("success");
 });
+
+/* ---------- entry points: segmento cards + hash routing ---------- */
 
 document.querySelectorAll(".segmento-card").forEach((card) => {
   card.addEventListener("click", () => {
     const segmento = card.dataset.segmento;
     state.segmento = segmento;
-    const step1Btn = document.querySelector(`#step1-options .option-btn[data-value="${segmento}"]`);
-    if (step1Btn) selectOption(document.getElementById("step1-options"), step1Btn);
     buildStep3Options();
     document.getElementById("simulacao").scrollIntoView({ behavior: "smooth", block: "start" });
     goToStep(2);
@@ -214,14 +439,15 @@ function preSelectFromHash() {
   const hash = window.location.hash.replace("#", "");
   if (OBJETIVOS[hash]) {
     state.segmento = hash;
-    const step1Btn = document.querySelector(`#step1-options .option-btn[data-value="${hash}"]`);
-    if (step1Btn) selectOption(document.getElementById("step1-options"), step1Btn);
     buildStep3Options();
     goToStep(2);
   }
 }
 
 preSelectFromHash();
+syncStepUI(1);
+
+/* ---------- header: hide on scroll down, show on scroll up ---------- */
 
 (function () {
   const header = document.getElementById("siteHeader");
@@ -230,8 +456,8 @@ preSelectFromHash();
   let ticking = false;
 
   function onScroll() {
-    const y = window.scrollY;
-    if (y > lastY && y > 120) {
+    const y = Math.max(window.scrollY, 0);
+    if (y > lastY && y > 90) {
       header.classList.add("hide");
     } else {
       header.classList.remove("hide");
@@ -252,19 +478,64 @@ preSelectFromHash();
   );
 })();
 
-(function () {
-  const bg = document.getElementById("parallaxBg");
-  const hero = document.querySelector(".hero");
-  if (!bg || !hero) return;
+/* ---------- mobile menu ---------- */
 
-  function update() {
-    const heroHeight = hero.offsetHeight || 1;
-    const progress = Math.min(window.scrollY / heroHeight, 1);
-    bg.style.filter = `blur(${progress * 12}px)`;
-    bg.style.transform = `scale(1.15) translateY(${progress * 24}px)`;
+(function () {
+  const toggle = document.getElementById("menuToggle");
+  const menu = document.getElementById("mobileMenu");
+  if (!toggle || !menu) return;
+
+  function closeMenu() {
+    menu.hidden = true;
+    toggle.setAttribute("aria-expanded", "false");
   }
 
-  window.addEventListener("scroll", update, { passive: true });
-  window.addEventListener("resize", update);
-  update();
+  function openMenu() {
+    menu.hidden = false;
+    toggle.setAttribute("aria-expanded", "true");
+  }
+
+  toggle.addEventListener("click", () => {
+    const expanded = toggle.getAttribute("aria-expanded") === "true";
+    expanded ? closeMenu() : openMenu();
+  });
+
+  menu.querySelectorAll("a").forEach((a) => a.addEventListener("click", closeMenu));
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && toggle.getAttribute("aria-expanded") === "true") {
+      closeMenu();
+      toggle.focus();
+    }
+  });
+})();
+
+/* ---------- subtle atmosphere parallax (desktop only, reduced-motion aware) ---------- */
+
+(function () {
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const shapes = document.querySelectorAll(".atmo-shape");
+  if (reduceMotion || !shapes.length || window.innerWidth < 860) return;
+
+  let ticking = false;
+
+  function update() {
+    const y = window.scrollY;
+    shapes.forEach((el, i) => {
+      const speed = 0.03 + i * 0.015;
+      el.style.transform = `translateY(${y * speed}px)`;
+    });
+    ticking = false;
+  }
+
+  window.addEventListener(
+    "scroll",
+    () => {
+      if (!ticking) {
+        requestAnimationFrame(update);
+        ticking = true;
+      }
+    },
+    { passive: true }
+  );
 })();
