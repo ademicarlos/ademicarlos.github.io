@@ -76,24 +76,20 @@
 <main id="main">
 
   <section class="hero" id="inicio">
-    <div class="hero-atmosphere" aria-hidden="true">
-      <span class="atmo-shape atmo-shape--1"></span>
-      <span class="atmo-shape atmo-shape--2"></span>
-      <span class="atmo-shape atmo-shape--3"></span>
-    </div>
+    <div class="hero-bg" aria-hidden="true"></div>
+    <div class="hero-overlay" aria-hidden="true"></div>
     <div class="container hero-inner">
       <div class="hero-text">
-        <p class="eyebrow">Carlos Eduardo · Consultor de Consórcios Ademicon</p>
-        <h1>Seu próximo patrimônio começa com um bom planejamento.</h1>
-        <p class="hero-subtitle">Consórcio para imóveis, veículos, agronegócio e planejamento patrimonial, com atendimento personalizado para o seu objetivo.</p>
+        <p class="eyebrow">Carlos Eduardo • Consultor de Consórcios Ademicon</p>
+        <h1>Planeje sua próxima conquista com consórcio</h1>
+        <p class="hero-subtitle">Imóveis, veículos, agronegócio e planejamento patrimonial, com atendimento personalizado para o seu objetivo.</p>
         <div class="hero-actions">
-          <a href="#simulacao" class="btn btn-primary btn-lg">Simular meu objetivo →</a>
+          <a href="#simulacao" class="btn btn-primary btn-lg">Quero fazer uma simulação →</a>
           <a href="https://wa.me/5577998726668" target="_blank" rel="noopener" class="btn btn-secondary btn-lg">Falar no WhatsApp</a>
         </div>
-        <p class="hero-microcopy">Atendimento personalizado com Carlos Eduardo</p>
       </div>
       <div class="hero-photo">
-        <img src="assets/consultor-retrato.jpg" alt="Carlos Eduardo, consultor de consórcios Ademicon" width="600" height="600" loading="eager">
+        <img src="assets/consultor-retrato.jpg" alt="Carlos Eduardo, consultor de consórcios Ademicon" width="576" height="720" loading="eager">
       </div>
     </div>
   </section>
@@ -114,27 +110,27 @@
       <h2>Escolha seu objetivo</h2>
       <div class="segmento-grid">
         <button class="segmento-card" data-segmento="agro">
-          <span class="segmento-icon"><svg class="icon" aria-hidden="true"><use href="#icon-agro"></use></svg></span>
+          <span class="segmento-icon" aria-hidden="true">🚜</span>
           <span class="segmento-nome">Agronegócio</span>
           <span class="segmento-desc">Tratores, colheitadeiras, terras e estrutura</span>
         </button>
         <button class="segmento-card" data-segmento="veiculo">
-          <span class="segmento-icon"><svg class="icon" aria-hidden="true"><use href="#icon-veiculo"></use></svg></span>
+          <span class="segmento-icon" aria-hidden="true">🚗</span>
           <span class="segmento-nome">Veículos</span>
           <span class="segmento-desc">Carro, moto ou caminhão, novo ou usado</span>
         </button>
         <button class="segmento-card" data-segmento="imovel">
-          <span class="segmento-icon"><svg class="icon" aria-hidden="true"><use href="#icon-imovel"></use></svg></span>
+          <span class="segmento-icon" aria-hidden="true">🏠</span>
           <span class="segmento-nome">Imóveis</span>
           <span class="segmento-desc">Casa, apartamento, terreno ou construção</span>
         </button>
         <button class="segmento-card" data-segmento="investimento">
-          <span class="segmento-icon"><svg class="icon" aria-hidden="true"><use href="#icon-investimento"></use></svg></span>
-          <span class="segmento-nome">Investimento / Patrimônio</span>
+          <span class="segmento-icon" aria-hidden="true">📈</span>
+          <span class="segmento-nome">Planejamento Patrimonial</span>
           <span class="segmento-desc">Estratégia de crédito planejado</span>
         </button>
         <button class="segmento-card" data-segmento="outros">
-          <span class="segmento-icon"><svg class="icon" aria-hidden="true"><use href="#icon-outros"></use></svg></span>
+          <span class="segmento-icon" aria-hidden="true">💼</span>
           <span class="segmento-nome">Outros</span>
           <span class="segmento-desc">Conte seu objetivo pra gente</span>
         </button>
@@ -194,11 +190,26 @@
           <div class="form-step active" data-step="1">
             <h3 tabindex="-1">O que você deseja conquistar?</h3>
             <div class="option-grid" id="step1-options" role="group" aria-label="Objetivo">
-              <button type="button" class="option-btn" data-value="agro" aria-pressed="false"><svg class="icon icon-sm" aria-hidden="true"><use href="#icon-agro"></use></svg>Agronegócio</button>
-              <button type="button" class="option-btn" data-value="veiculo" aria-pressed="false"><svg class="icon icon-sm" aria-hidden="true"><use href="#icon-veiculo"></use></svg>Veículo</button>
-              <button type="button" class="option-btn" data-value="imovel" aria-pressed="false"><svg class="icon icon-sm" aria-hidden="true"><use href="#icon-imovel"></use></svg>Imóvel</button>
-              <button type="button" class="option-btn" data-value="investimento" aria-pressed="false"><svg class="icon icon-sm" aria-hidden="true"><use href="#icon-investimento"></use></svg>Investimento / Patrimônio</button>
-              <button type="button" class="option-btn" data-value="outros" aria-pressed="false"><svg class="icon icon-sm" aria-hidden="true"><use href="#icon-outros"></use></svg>Outros</button>
+              <button type="button" class="option-btn option-btn--rich" data-value="agro" aria-pressed="false">
+                <span class="option-emoji" aria-hidden="true">🚜</span>
+                <span class="option-text"><strong>Agronegócio</strong><small>Tratores, colheitadeiras, terras e estrutura</small></span>
+              </button>
+              <button type="button" class="option-btn option-btn--rich" data-value="veiculo" aria-pressed="false">
+                <span class="option-emoji" aria-hidden="true">🚗</span>
+                <span class="option-text"><strong>Veículos</strong><small>Carro, moto ou caminhão, novo ou usado</small></span>
+              </button>
+              <button type="button" class="option-btn option-btn--rich" data-value="imovel" aria-pressed="false">
+                <span class="option-emoji" aria-hidden="true">🏠</span>
+                <span class="option-text"><strong>Imóveis</strong><small>Casa, apartamento, terreno ou construção</small></span>
+              </button>
+              <button type="button" class="option-btn option-btn--rich" data-value="investimento" aria-pressed="false">
+                <span class="option-emoji" aria-hidden="true">📈</span>
+                <span class="option-text"><strong>Planejamento Patrimonial</strong><small>Estratégia de crédito planejado</small></span>
+              </button>
+              <button type="button" class="option-btn option-btn--rich" data-value="outros" aria-pressed="false">
+                <span class="option-emoji" aria-hidden="true">💼</span>
+                <span class="option-text"><strong>Outros</strong><small>Conte seu objetivo pra gente</small></span>
+              </button>
             </div>
             <div class="step-nav">
               <button type="button" class="btn btn-primary" data-action="continue" data-step="1" disabled>Continuar →</button>
@@ -321,7 +332,7 @@
           <div class="form-step form-success" data-step="success">
             <div class="success-icon"><svg class="icon" aria-hidden="true"><use href="#icon-check"></use></svg></div>
             <h3 id="successNome" tabindex="-1">Tudo certo!</h3>
-            <p>Já tenho as informações iniciais sobre o seu objetivo. Agora posso preparar uma simulação personalizada para você.</p>
+            <p>Já recebi as principais informações do seu objetivo. Agora posso preparar uma simulação personalizada para você.</p>
             <a href="#" id="whatsappLink" target="_blank" rel="noopener" class="btn btn-primary btn-lg btn-whatsapp">Continuar pelo WhatsApp →</a>
           </div>
 
@@ -332,15 +343,11 @@
 
   <section class="consultor" id="fale-comigo">
     <div class="container consultor-inner">
-      <div class="consultor-foto-wrap">
-        <img src="assets/consultor-retrato.jpg" alt="Carlos Eduardo" class="consultor-foto" width="600" height="600" loading="lazy">
-      </div>
-      <div class="consultor-texto">
-        <p class="section-eyebrow">Quem vai te atender</p>
-        <h2>Carlos Eduardo</h2>
-        <p class="consultor-cargo">Consultor de Consórcios Ademicon</p>
-        <p>Atendimento personalizado, análise do seu objetivo e planejamento da estratégia de aquisição — pra você chegar até a sua próxima conquista sem surpresas pelo caminho.</p>
-      </div>
+      <p class="section-eyebrow">Quem vai te atender</p>
+      <h2>Carlos Eduardo</h2>
+      <p class="consultor-cargo">Consultor de Consórcios Ademicon</p>
+      <p class="consultor-texto">Atendimento personalizado para agronegócio, veículos, imóveis e planejamento patrimonial.</p>
+      <a href="https://wa.me/5577998726668" target="_blank" rel="noopener" class="btn btn-primary">Falar com Carlos</a>
     </div>
   </section>
 
@@ -354,7 +361,7 @@
   <section class="seguranca" id="privacidade">
     <div class="container seguranca-inner">
       <h2>Segurança e privacidade</h2>
-      <p>As informações preenchidas na simulação são usadas apenas para montar sua mensagem no WhatsApp e não ficam armazenadas neste site nem são enviadas a nenhum servidor ou serviço de terceiros — elas só saem do seu navegador quando você mesmo clica para continuar pelo WhatsApp.</p>
+      <p>Os dados enviados neste formulário serão utilizados exclusivamente para o atendimento e a preparação da simulação solicitada por você, através da conversa iniciada no WhatsApp.</p>
     </div>
   </section>
 

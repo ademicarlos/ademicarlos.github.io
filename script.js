@@ -1,18 +1,44 @@
 const WHATSAPP_NUMBER = "5577998726668";
 
 const OBJETIVOS = {
-  agro: ["Trator", "Colheitadeira", "Implementos", "Caminhão", "Terra", "Estrutura", "Outro"],
-  veiculo: ["Carro", "Moto", "Caminhão", "Outro"],
-  imovel: ["Casa", "Apartamento", "Terreno", "Imóvel comercial", "Construção", "Reforma", "Investimento"],
-  investimento: ["Diversificar patrimônio", "Reserva de valor", "Planejamento futuro", "Outro"],
-  outros: ["Quero conhecer as opções disponíveis"],
+  agro: [
+    { label: "Trator", emoji: "🚜" },
+    { label: "Colheitadeira", emoji: "🌾" },
+    { label: "Implementos", emoji: "⚙️" },
+    { label: "Caminhão", emoji: "🚛" },
+    { label: "Terra", emoji: "🌱" },
+    { label: "Estrutura", emoji: "🏗️" },
+    { label: "Outro", emoji: "💬" },
+  ],
+  veiculo: [
+    { label: "Carro", emoji: "🚗" },
+    { label: "Moto", emoji: "🏍️" },
+    { label: "Caminhão", emoji: "🚛" },
+    { label: "Outro", emoji: "💬" },
+  ],
+  imovel: [
+    { label: "Casa", emoji: "🏠" },
+    { label: "Apartamento", emoji: "🏢" },
+    { label: "Terreno", emoji: "📍" },
+    { label: "Imóvel comercial", emoji: "🏬" },
+    { label: "Construção", emoji: "🏗️" },
+    { label: "Reforma", emoji: "🔨" },
+    { label: "Investimento", emoji: "📈" },
+  ],
+  investimento: [
+    { label: "Aquisição de imóveis", emoji: "🏠" },
+    { label: "Formação patrimonial", emoji: "📊" },
+    { label: "Diversificação", emoji: "🔄" },
+    { label: "Quero entender melhor", emoji: "💬" },
+  ],
+  outros: [{ label: "Quero conhecer as opções disponíveis", emoji: "💬" }],
 };
 
 const SEGMENTO_LABEL = {
   agro: "Agronegócio",
   veiculo: "Veículo",
   imovel: "Imóvel",
-  investimento: "Investimento / Patrimônio",
+  investimento: "Planejamento Patrimonial",
   outros: "Outros",
 };
 
@@ -261,10 +287,20 @@ function buildStep3Options() {
   lista.forEach((item) => {
     const btn = document.createElement("button");
     btn.type = "button";
-    btn.className = "option-btn";
-    btn.dataset.value = item;
+    btn.className = "option-btn option-btn--compact";
+    btn.dataset.value = item.label;
     btn.setAttribute("aria-pressed", "false");
-    btn.textContent = item;
+
+    const emoji = document.createElement("span");
+    emoji.className = "option-emoji option-emoji--sm";
+    emoji.setAttribute("aria-hidden", "true");
+    emoji.textContent = item.emoji;
+
+    const text = document.createElement("span");
+    text.textContent = item.label;
+
+    btn.appendChild(emoji);
+    btn.appendChild(text);
     container.appendChild(btn);
   });
 }
@@ -495,12 +531,19 @@ syncStepUI(1);
     toggle.setAttribute("aria-expanded", "true");
   }
 
-  toggle.addEventListener("click", () => {
+  toggle.addEventListener("click", (e) => {
+    e.stopPropagation();
     const expanded = toggle.getAttribute("aria-expanded") === "true";
     expanded ? closeMenu() : openMenu();
   });
 
   menu.querySelectorAll("a").forEach((a) => a.addEventListener("click", closeMenu));
+
+  document.addEventListener("click", (e) => {
+    if (toggle.getAttribute("aria-expanded") === "true" && !menu.contains(e.target) && !toggle.contains(e.target)) {
+      closeMenu();
+    }
+  });
 
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape" && toggle.getAttribute("aria-expanded") === "true") {
@@ -508,34 +551,4 @@ syncStepUI(1);
       toggle.focus();
     }
   });
-})();
-
-/* ---------- subtle atmosphere parallax (desktop only, reduced-motion aware) ---------- */
-
-(function () {
-  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const shapes = document.querySelectorAll(".atmo-shape");
-  if (reduceMotion || !shapes.length || window.innerWidth < 860) return;
-
-  let ticking = false;
-
-  function update() {
-    const y = window.scrollY;
-    shapes.forEach((el, i) => {
-      const speed = 0.03 + i * 0.015;
-      el.style.transform = `translateY(${y * speed}px)`;
-    });
-    ticking = false;
-  }
-
-  window.addEventListener(
-    "scroll",
-    () => {
-      if (!ticking) {
-        requestAnimationFrame(update);
-        ticking = true;
-      }
-    },
-    { passive: true }
-  );
 })();
