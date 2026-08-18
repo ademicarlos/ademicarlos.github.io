@@ -272,16 +272,15 @@ a { color: inherit; text-decoration: none; }
   position: absolute;
   inset: 0;
   z-index: 0;
-  background: linear-gradient(90deg, rgba(255,255,255,0.97) 0%, rgba(255,255,255,0.86) 45%, rgba(255,255,255,0.55) 100%);
+  background: radial-gradient(ellipse at center, rgba(255,255,255,0.97) 0%, rgba(255,255,255,0.9) 55%, rgba(255,255,255,0.78) 100%);
 }
 
 .hero-inner {
   position: relative;
   z-index: 1;
-  display: grid;
-  grid-template-columns: 1.1fr 0.9fr;
-  gap: var(--space-16);
-  align-items: center;
+  max-width: 640px;
+  margin-inline: auto;
+  text-align: center;
 }
 
 .eyebrow {
@@ -303,33 +302,13 @@ a { color: inherit; text-decoration: none; }
   font-size: 1.1rem;
   margin-bottom: var(--space-8);
   max-width: 480px;
-}
-
-.hero-photo {
-  position: relative;
-  max-width: 320px;
   margin-inline: auto;
-  aspect-ratio: 4 / 5;
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-  box-shadow: var(--shadow-lg);
-  background: var(--gray-light);
 }
 
-.hero-photo img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center top;
-}
+.hero-actions { justify-content: center; }
 
 @media (max-width: 860px) {
   .hero { padding: calc(var(--header-h) + 28px) 0 var(--space-12); }
-  .hero-overlay { background: linear-gradient(180deg, rgba(255,255,255,0.97) 0%, rgba(255,255,255,0.9) 55%, rgba(255,255,255,0.72) 100%); }
-  .hero-inner { grid-template-columns: 1fr; text-align: center; gap: var(--space-6); }
-  .hero-subtitle { margin-left: auto; margin-right: auto; }
-  .hero-actions { justify-content: center; }
-  .hero-photo { max-width: 220px; }
 }
 
 /* Trust strip */
@@ -761,15 +740,76 @@ a { color: inherit; text-decoration: none; }
 /* Consultor */
 .consultor { padding: var(--space-24) 0; background: var(--gray-light); }
 
-.consultor-inner {
-  max-width: 560px;
+.consultor-card {
+  position: relative;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  padding: var(--space-12);
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: var(--space-12);
+  max-width: 860px;
   margin-inline: auto;
-  text-align: center;
+  overflow: hidden;
 }
 
-.consultor-inner h2 { font-size: 2rem; margin-bottom: var(--space-1); }
-.consultor-cargo { color: var(--red); font-weight: 600; margin-bottom: var(--space-4); }
-.consultor-inner p.consultor-texto { color: var(--gray); margin-bottom: var(--space-8); }
+.consultor-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--red), var(--red-dark));
+}
+
+.consultor-foto-wrap {
+  width: 220px;
+  height: 220px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+  margin-inline: auto;
+  border: 4px solid var(--white);
+  outline: 2px solid var(--border);
+  box-shadow: var(--shadow-md);
+}
+
+.consultor-foto-wrap .consultor-foto {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.consultor-texto-wrap { text-align: left; }
+
+.consultor-texto-wrap h2 { font-size: clamp(1.5rem, 4vw, 2rem); margin-bottom: var(--space-1); }
+
+.consultor-cargo { color: var(--graphite-soft); font-weight: 600; margin-bottom: var(--space-1); }
+
+.consultor-especialidade { color: var(--red); font-weight: 600; font-size: 0.95rem; margin-bottom: var(--space-4); }
+
+.consultor-texto-wrap p.consultor-texto { color: var(--gray); margin-bottom: var(--space-8); max-width: 480px; }
+
+@media (hover: hover) {
+  .consultor-card { transition: box-shadow var(--dur-base) var(--ease), transform var(--dur-base) var(--ease); }
+  .consultor-card:hover { box-shadow: var(--shadow-lg), 0 20px 44px rgba(20,20,22,0.12); transform: translateY(-2px); }
+}
+
+@media (max-width: 700px) {
+  .consultor { padding: var(--space-16) 0; }
+  .consultor-card {
+    grid-template-columns: 1fr;
+    text-align: center;
+    padding: var(--space-8) var(--space-6);
+    gap: var(--space-6);
+    border-radius: var(--radius-md);
+  }
+  .consultor-foto-wrap { width: 140px; height: 140px; }
+  .consultor-texto-wrap { text-align: center; }
+  .consultor-texto-wrap p.consultor-texto { margin-inline: auto; }
+}
 
 /* CTA final */
 .cta-final {
